@@ -1,0 +1,7 @@
+{
+  "name": "Retro-Neon XY Oscilloscope",
+  "description": "An 80s-inspired XY oscilloscope visualizer that plots audio signals (Lissajous patterns) in a realistic CRT-style interface with phosphor persistence and bloom effects.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
