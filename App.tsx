@@ -22,21 +22,28 @@ const App: React.FC = () => {
 
   const [aiInsight, setAiInsight] = useState<string>("System Ready. Awaiting signal input.");
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [hasApiKey, setHasApiKey] = useState(true);
 
   // Gemini AI Analysis of current pattern
   const analyzePattern = useCallback(async (fx: number, fy: number, phase: number) => {
-    if (!process.env.API_KEY) return;
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      setHasApiKey(false);
+      setAiInsight("AI Insights disabled: No API key detected in environment.");
+      return;
+    }
     
     setIsAiLoading(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: `Explain the physics and aesthetic of a Lissajous curve with X:Y ratio of ${fx}:${fy} and phase shift ${phase}. Keep it under 40 words and sound like a 1980s computer manual.`,
       });
-      setAiInsight(response.text || "Analysis complete.");
+      setAiInsight(response.text || "Analysis complete. Pattern recognized.");
     } catch (err) {
       console.error("AI Insight Error", err);
+      setAiInsight("Pattern analysis interrupted. Harmonic interference detected.");
     } finally {
       setIsAiLoading(false);
     }
@@ -103,14 +110,14 @@ const App: React.FC = () => {
 
         {/* AI Insight Terminal */}
         <div className="mt-8 w-full max-w-4xl bg-zinc-900/50 p-4 border border-zinc-800 rounded-lg flex gap-4 items-start">
-          <div className="p-2 bg-green-500/10 rounded">
-            <svg className={`w-6 h-6 text-green-500 ${isAiLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className={`p-2 rounded ${hasApiKey ? 'bg-green-500/10' : 'bg-amber-500/10'}`}>
+            <svg className={`w-6 h-6 ${hasApiKey ? 'text-green-500' : 'text-amber-500'} ${isAiLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
           </div>
           <div>
             <h4 className="text-[10px] text-zinc-500 font-bold uppercase mb-1 tracking-widest">Digital Signal Processor (AI)</h4>
-            <p className="text-sm font-mono text-green-400/80 leading-tight">
+            <p className={`text-sm font-mono leading-tight ${hasApiKey ? 'text-green-400/80' : 'text-amber-400/80 italic'}`}>
               {isAiLoading ? 'Synthesizing knowledge...' : aiInsight}
             </p>
           </div>
